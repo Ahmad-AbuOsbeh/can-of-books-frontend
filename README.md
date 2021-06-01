@@ -42,3 +42,15 @@ Start time: 3:45
 Finish time: 6:30
 
 Actual time needed to complete: 2:15 hours
+
+## lab13
+## feature 1
+Name of feature: add and delete books
+
+Estimate of time needed to complete: 5-6 hour
+
+Start time: 2:20 pm
+
+Finish time: 6:30 pm
+
+Actual time needed to complete: 4 hours
