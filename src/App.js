@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { withAuth0 } from '@auth0/auth0-react';
 import MyFavoriteBooks from './myFavoriteBooks';
 import Profile from './profile';
+import Login from './login';
 import {
   BrowserRouter as Router,
   Switch,
@@ -32,6 +33,7 @@ class App extends React.Component {
                 {/* TODO: add a route with a path of '/profile' that renders a `Profile` component */}
                 </Route>
               </Switch>
+              {!isAuthenticated &&<Login></Login>}
             <Footer />
           {/* </IsLoadingAndError> */}
         </Router>
