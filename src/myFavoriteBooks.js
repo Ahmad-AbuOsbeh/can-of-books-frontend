@@ -3,10 +3,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Jumbotron from 'react-bootstrap/Jumbotron';
 import './myFavoriteBooks.css';
 import axios from 'axios';
-import { useAuth0 } from "@auth0/auth0-react";
 import { withAuth0 } from '@auth0/auth0-react';
 import BookFormModal from './BookFormModal';
-import {Card,Button, CardColumns} from 'react-bootstrap';
+import { Card, Button, CardColumns, Form, Modal } from 'react-bootstrap';
 require('dotenv').config();
 
 class MyFavoriteBooks extends React.Component {
@@ -19,7 +18,11 @@ class MyFavoriteBooks extends React.Component {
       bookUrl: '',
       bookDesecription: '',
       bookData: '',
-      serverRoute: process.env.REACT_APP_SERVER
+      serverRoute: process.env.REACT_APP_SERVER,
+      showUpdatForm: false,
+      index: '',
+
+
     });
   }
 
@@ -75,6 +78,65 @@ class MyFavoriteBooks extends React.Component {
     })
   }
 
+  //show update form function
+  showUpdateForm = (index) => {
+    console.log('hellooo from showupdatefunc');
+    this.setState({
+      showUpdatForm: true,
+      index: index,
+      bookTitle: this.state.resultsBook[index].bookTitle,
+      bookUrl: this.state.resultsBook[index].bookImage,
+      bookDesecription: this.state.resultsBook[index].bookDescription,
+
+    })
+    // console.log('this.state.showUpdateForm',this.state.showUpdatForm);
+  }
+
+  hideModalFunction = () => {
+    this.setState({
+      showUpdatForm: false,
+    })
+  }
+
+  //update data fnction
+  updatDataFunction = async (event) => {
+    event.preventDefault();
+    const updatedData = {
+      bookTitle: this.state.bookTitle,
+      bookImage: this.state.bookUrl,
+      bookDescription: this.state.bookDesecription,
+      userEmail: this.props.auth0.user.email,
+    }
+
+
+    console.log('updatedData', updatedData);
+    console.log('this.state.index', this.state.index);
+    let updatedResponseFromDB = await axios.put(`${this.state.serverRoute}/updatebook/${this.state.index}`, updatedData)
+
+    this.setState({
+      showUpdatForm: false,
+      resultsBook:updatedResponseFromDB.data,
+    })
+
+  }
+
+  handleChangebookTitle =(e)=>{
+    this.setState({
+      bookTitle: e.target.value,
+    })
+  }
+
+  handleChangebookUrl =(e)=>{
+    this.setState({
+      bookUrl: e.target.value,
+    })
+  }
+
+  handleChangebookDesecription =(e)=>{
+    this.setState({
+      bookDesecription: e.target.value,
+    })
+  }
   async componentDidMount() {
 
     let serverRoute = process.env.REACT_APP_SERVER
@@ -110,68 +172,84 @@ class MyFavoriteBooks extends React.Component {
         {/* <h1>{this.state.bookTitle}</h1>
         <img src={this.state.bookUrl} alt =''></img>
         <p>{this.state.bookDesecription}</p> */}
-  <CardColumns>
-        {this.state.resultsBook.map((item, index) => {
-          return (
-            <>
-              {/* <div key={index}>
-                <h1>{item.bookTitle}</h1>
-                <img src={item.bookImage} alt='' style={{ width: "500px" }}></img>
-                <p>{item.bookDescription}</p>
-                <button onClick={() => this.deleteFunctoin(index)}>Delete</button>
-              </div> */}
-            
+        <CardColumns>
+          {this.state.resultsBook.map((item, index) => {
+            return (
+              <>
+                
+
                 <Card key={index} >
                   <Card.Img variant="top" src={item.bookImage} />
                   <Card.Body>
                     <Card.Title>{item.bookTitle}</Card.Title>
                     <Card.Text>{item.bookDescription}</Card.Text>
                     <Button onClick={() => this.deleteFunctoin(index)}>Delete</Button>
+
+                    <Button onClick={() => this.showUpdateForm(index)}>Update</Button>
                   </Card.Body>
                   <Card.Footer>
                     <small className="text-muted">Last updated 1 sec ago</small>
                   </Card.Footer>
                 </Card>
-                {/* <Card>
-                  <Card.Img variant="top" src="holder.js/100px160" />
-                  <Card.Body>
-                    <Card.Title>Card title</Card.Title>
-                    <Card.Text>
-                      This card has supporting text below as a natural lead-in to additional
-        content.{' '}
-                    </Card.Text>
-                  </Card.Body>
-                  <Card.Footer>
-                    <small className="text-muted">Last updated 3 mins ago</small>
-                  </Card.Footer>
-                </Card>
-                <Card>
-                  <Card.Img variant="top" src="holder.js/100px160" />
-                  <Card.Body>
-                    <Card.Title>Card title</Card.Title>
-                    <Card.Text>
-                      This is a wider card with supporting text below as a natural lead-in to
-                      additional content. This card has even longer content than the first to
-                      show that equal height action.
-      </Card.Text>
-                  </Card.Body>
-                  <Card.Footer>
-                    <small className="text-muted">Last updated 3 mins ago</small>
-                  </Card.Footer>
-                </Card> */}
-              
-            </>
-          )
+
+                {this.state.showUpdatForm &&
+                  <>
+                    <Modal
+                      show={this.state.showUpdatForm}
+                      onHide={this.hideModalFunction}
+                      dialogClassName="modal-90w"
+                      aria-labelledby="example-custom-modal-styling-title"
+                    >
+                      <Modal.Header closeButton>
+                        <Modal.Title id="example-custom-modal-styling-title">
+                          Updat Your Book Data Now!
+                      </Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>
+                        <Form onSubmit={this.updatDataFunction}>
+                          <Form.Group>
+                            <Form.Label>Book Title :</Form.Label>
+                           
+                              <Form.Control
+                                type="text"
+                                
+                               
+                                name="bookTitle"
+                                value={this.state.bookTitle}
+                                onChange={this.handleChangebookTitle}
+                               
+                              />
+                           
+                       
+                            <br />
+                            <Form.Label>Image URL :</Form.Label>
+                            <Form.Control type="text" name="bookUrl" value={this.state.bookUrl} onChange={this.handleChangebookUrl}>
+
+                            </Form.Control>
+                            <br />
+                            <Form.Label>Book Description :</Form.Label>
+                            <Form.Control size="sm" type="text" name="bookDesecription" value={this.state.bookDesecription} onChange={this.handleChangebookDesecription}>
+
+                            </Form.Control>
+                            <Button type='submit' >Update !</Button>
+                          </Form.Group>
+                        </Form>
+                      </Modal.Body>
+                    </Modal>
+
+                  </>
 
 
-        })}
+
+                }
+
+              </>
+            )
+
+
+          })}
         </CardColumns>
-        {/* <h1>{this.state.resultsBook.bookTitle}</h1> */}
-
-
-        {/* <h1>{this.state.resultsBook.books[1].bookTitle}</h1>
-        <img src={this.state.resultsBook.books[1].bookImage} alt =''></img>
-        <p>{this.state.resultsBook.books[1].bookDescription}</p> */}
+       
 
       </Jumbotron>
     )
